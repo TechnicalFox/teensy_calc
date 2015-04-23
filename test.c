@@ -58,7 +58,7 @@ char look () {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 struct queue {
-  char list[MAXSIZE];
+  int list[MAXSIZE];
   int head;
   int tail;
   int count;
@@ -68,7 +68,7 @@ typedef struct queue QUEUE;
 QUEUE outputQueue;
 
 /*Function to add an element to the queue*/
-void add (char added) {
+void add (int added) {
   if ( outputQueue.head == -1 && outputQueue.tail == -1 ) {
     outputQueue.head = 0;
     outputQueue.tail = 0;
@@ -224,7 +224,8 @@ void fillQueue() {
                 char curOper = NULL;
                 curOper = look();
                 while ( curOper != '(' && curOper != NULL) {
-                    add(pop()); //pop off stack into queue
+                    add(NULL);
+                    add((int)pop()); //pop off stack into queue
                     curOper = look();
                 }
                 if ( curOper == ')' ) {
@@ -240,20 +241,99 @@ void fillQueue() {
     }
     i = 0;
     while ( i < operatorStack.top + 1 ) {
-        add(pop());
+        add(NULL);
+        add((int)pop());
         i++;
     }
 }
 
+
+
 double evalFunction() {
+    fillQueue();
+    
     double result = 0.0;
-    int i = 0;
-    while ( i < outputQueue.count ) {
-        
+    
+    bool oper = false;
+    bool select = false;
+    double val1 = 0; //false
+    double val2 = 0; //true
+    
+    int list[MAXSIZE] = {NULL};
+    int size = -1;
+    
+    //change everything else that deals with values to double
+    //to allow for decimals
+    //also add a handle for '.' char
+    while ( outputQueue.count > 0 ) {
+        if (oper && val1 != 0.0 && val2 != 0.0) {
+            // ^ 94
+            // * 42
+            // / 47
+            // + 43
+            // - 45
+            // ( 40
+            // ) 41
+            switch (oper) {
+                case 94 :
+                    result += pow(val1, val2);
+                    break;
+                case 42 :
+                    result += (val1 * val2);
+                    break;
+                case 47 :
+                    result += (val1 / val2);
+                    break;
+                case 43 :
+                    result += (val1 + val2);
+                    break;
+                case 45 :
+                    result += (val1 - val2);
+                    break;
+                default :
+                    //Serial.printf("SYNTAX ERROR");
+                    break;
+            }
+            val1 = result;
+            val2 = 0.0;
+            select = true;
+            rem();
+            continue;
+        } else if ( oper && val2 == 0.0 && size > -1 ) {
+            val2 = val1;
+            val1 = list[size];
+            size--;
+            continue;
+        }
+        int curInt = rem();
+        if (curInt == NULL && outputQueue.count > 0) {
+            oper = true;
+        } else if (select) {
+            select = !(select);
+            if ( val1 != 0.0 ) {
+                size++;
+                list[size] = val1;
+                val1 = val2;
+                val2 = (double)curInt;
+            } else {
+                val1 = (double)curInt;
+            }
+        } else {
+            select = !(select);
+            if ( val2 != 0.0 ) {
+                size++;
+                list[size] = val1;
+                val1 = val2;
+                val2 = (double)curInt;
+            } else {
+                val2 = (double)curInt;
+            }
+        }
     }
+    return result;
 }
 
-void main() {
+int main() {
     operatorStack.top = -1;
     outputQueue.head = -1;
     outputQueue.tail = -1;
@@ -264,18 +344,9 @@ void main() {
     testList('5');
     //printFunction();
 
-    //double result = NULL;
-    //result = evalFunction();
-    //printf("%d\n", result);
-
-    // + 43
-    // - 45
-    // * 42
-    // / 47
-    // ^ 94
-    // ( 40
-    // ) 41
-    char x = ')';
-    int y = (int)x;
-    printf("%i\n", y);
+    double result = 0.0;
+    result = evalFunction();
+    //printf("%f\n", result);
+    
+    return 0;
 }
