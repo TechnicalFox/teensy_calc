@@ -4,9 +4,113 @@
 #include <IRremote.h>
 #include <openGLCD.h>
 
+#define MAXSIZE 100
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//STACK IMPLIMENTATION//
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct stack {
+  char list[MAXSIZE];
+  int top = -1;
+};
+
+typedef struct stack STACK;
+STACK operatorStack;
+
+/*Function to push an element to the stack*/
+void push (char pushed) {
+  if ( operatorStack.top < (MAXSIZE - 1) ) {
+    operatorStack.top++;
+    operatorStack.list[operatorStack.top] = pushed;
+    Serial.printf("%c pushed to stack\n", pushed);
+  } else {
+    Serial.printf("ERROR: stack full\n");
+  }
+  return;
+}
+
+/*Function to pop an element from the stack*/
+char pop () {
+  char popped = NULL;
+  if ( operatorStack.top > -1 ) { 
+    popped = operatorStack.list[operatorStack.top];
+    operatorStack.top--;
+    Serial.printf("%c popped from stack\n");
+  } else {
+    Serial.printf("ERROR: can't pop from empty stack\n");
+  }
+  return popped;
+}
+
+/*Function to peek at an element form the stack, peek is a keyword*/
+char look () {
+  char looked = NULL;
+  looked = operatorStack.list[operatorStack.top];
+  return looked;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//END STACK IMPLIMENTATION//
+/////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//QUEUE IMPLIMENTATION//
+/////////////////////////////////////////////////////////////////////////////////////////
+
+struct queue {
+  char list[MAXSIZE];
+  int head = -1;
+  int tail  = -1;
+  int count = 0;
+};
+
+typedef struct queue QUEUE;
+QUEUE outputQueue;
+
+/*Function to add an element to the queue*/
+void add (char added) {
+  if ( outputQueue.head == -1 && outputQueue.tail == -1 ) {
+    outputQueue.head = 0;
+    outputQueue.tail = 0;
+  } else if ( outputQueue.tail == (MAXSIZE - 1) && outputQueue.head != 0 ) {
+    outputQueue.tail = 0;
+  } else if ( outputQueue.count < (MAXSIZE - 1) ){
+    outputQueue.tail++;
+  } else {
+    Serial.printf("ERROR: queue full\n");
+    return;
+  }
+  outputQueue.list[outputQueue.tail] = added;
+  outputQueue.count++;
+  Serial.printf("%c added to queue\n", added);
+  return;
+}
+
+/*Function to remove and return an element from the queue, remove is a keyword*/
+char rem () {
+  char removed = NULL;
+  if ( outputQueue.count > 0 ) {
+    removed = outputQueue.list[outputQueue.head];
+    outputQueue.count--;
+    if ( outputQueue.head < (MAXSIZE - 1) ) {
+      outputQueue.head++;
+    } else {
+      outputQueue.head = 0;
+    }
+  } else {
+    Serial.printf("ERROR: can't remove from empty queue");
+  }
+  return removed;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//END QUEUE IMPLIMENTATION//
+/////////////////////////////////////////////////////////////////////////////////////////
+
 int IRpin = 4;
 char lastPressed = NULL;
-char currentLine[100] = {NULL};
+char currentLine[MAXSIZE] = {NULL};
 
 IRrecv irrecv(IRpin);
 decode_results results;
@@ -137,7 +241,7 @@ void loop() {
     char curPressed = NULL;
     if ( results.decode_type == 1 ) {
       getPressed(&curPressed);
-      Serial.printf("curPressed = %c\n", curPressed);
+      //Serial.printf("curPressed = %c\n", curPressed);
     }
     if ( curPressed != NULL && curPressed != '\t' ) {
       GLCD.printf("%c", curPressed);
