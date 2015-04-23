@@ -6,6 +6,7 @@
 
 int IRpin = 4;
 char lastPressed = NULL;
+char currentLine[100] = {NULL};
 
 IRrecv irrecv(IRpin);
 decode_results results;
@@ -119,7 +120,7 @@ void getPressed(char *curPressed) {
     return;
 }
 
-void evaluate(char[] equation) {
+void evaluate() {
   
   return;
 }
