@@ -93,6 +93,7 @@ char rem () {
   if ( outputQueue.count > 0 ) {
     removed = outputQueue.list[outputQueue.head];
     outputQueue.count--;
+    Serial.printf("%c removed from queue\n", removed);
     if ( outputQueue.head < (MAXSIZE - 1) ) {
       outputQueue.head++;
     } else {
@@ -110,7 +111,8 @@ char rem () {
 
 int IRpin = 4;
 char lastPressed = NULL;
-char currentLine[MAXSIZE] = {NULL};
+char currentFunction[MAXSIZE] = {NULL};
+int currentFunctionCount = 0;
 
 IRrecv irrecv(IRpin);
 decode_results results;
@@ -241,7 +243,17 @@ void loop() {
     char curPressed = NULL;
     if ( results.decode_type == 1 ) {
       getPressed(&curPressed);
-      //Serial.printf("curPressed = %c\n", curPressed);
+      if ( currentFunctionCount < MAXSIZE && curPressed != '\t' && curPressed != '\n') {
+        currentFunction[currentFunctionCount] = curPressed;
+        currentFunctionCount++;
+        Serial.printf("%c added to current function array\n", curPressed);
+      } else if ( curPressed == '\n' ) {
+        evaluate();
+      } else if ( curPressed == '\t' ) {
+        //ignore for mode button
+      } else {
+        Serial.printf("ERROR: function char array full\n");
+      }
     }
     if ( curPressed != NULL && curPressed != '\t' ) {
       GLCD.printf("%c", curPressed);
