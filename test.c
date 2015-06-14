@@ -276,7 +276,7 @@ double evalFunction() {
             // ) 41
             switch (oper) {
                 case 94 :
-                    result += pow(val1, val2);
+                    result += (pow(val1, val2));
                     break;
                 case 42 :
                     result += (val1 * val2);
@@ -346,7 +346,7 @@ int main() {
 
     double result = 0.0;
     result = evalFunction();
-    //printf("%f\n", result);
+    printf("%f\n", result);
     
     return 0;
 }
